@@ -1,7 +1,7 @@
 .gradle
 build/
 .gradletasknamecache
-
+.idea
 .idea/libraries
 .idea/modules
 .idea/compiler.xml

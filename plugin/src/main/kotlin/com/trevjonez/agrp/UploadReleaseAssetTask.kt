@@ -35,59 +35,64 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 abstract class UploadReleaseAssetTask : AgrpTask() {
-  lateinit var createTask: TaskProvider<CreateReleaseTask>
+    lateinit var createTask: TaskProvider<CreateReleaseTask>
 
-  @get:Input
-  abstract val assetFile: RegularFileProperty
+    @get:Input
+    abstract val assetFile: RegularFileProperty
 
-  @TaskAction
-  fun uploadAsset() {
-    val rawFile = assetFile.asFile.get()
-    val (contentType, uploadFile) = if (rawFile.isDirectory) {
-      "application/zip" to File(rawFile.parent, "${rawFile.name}.zip").apply {
-        ZipOutputStream(FileOutputStream(this)).use { zos ->
-          Files.walkFileTree(rawFile.toPath(), object : SimpleFileVisitor<Path>() {
-            @Throws(IOException::class)
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-              zos.putNextEntry(ZipEntry(rawFile.toPath().relativize(file).toString()))
-              Files.copy(file, zos)
-              zos.closeEntry()
-              return FileVisitResult.CONTINUE
+    @TaskAction
+    fun uploadAsset() {
+        val rawFile = assetFile.asFile.get()
+        val (contentType, uploadFile) = if (rawFile.isDirectory) {
+            "application/zip" to File(rawFile.parent, "${rawFile.name}.zip").apply {
+                ZipOutputStream(FileOutputStream(this)).use { zos ->
+                    Files.walkFileTree(rawFile.toPath(), object : SimpleFileVisitor<Path>() {
+                        @Throws(IOException::class)
+                        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                            zos.putNextEntry(ZipEntry(rawFile.toPath().relativize(file).toString()))
+                            Files.copy(file, zos)
+                            zos.closeEntry()
+                            return FileVisitResult.CONTINUE
+                        }
+
+                        @Throws(IOException::class)
+                        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+                            zos.putNextEntry(ZipEntry(rawFile.toPath().relativize(dir).toString() + "/"))
+                            zos.closeEntry()
+                            return FileVisitResult.CONTINUE
+                        }
+                    })
+                }
             }
-
-            @Throws(IOException::class)
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-              zos.putNextEntry(ZipEntry(rawFile.toPath().relativize(dir).toString() + "/"))
-              zos.closeEntry()
-              return FileVisitResult.CONTINUE
-            }
-          })
+        } else {
+            (URLConnection.getFileNameMap().getContentTypeFor(rawFile.name) ?: "application/octet-stream") to rawFile
         }
-      }
-    } else {
-      (URLConnection.getFileNameMap().getContentTypeFor(rawFile.name) ?: "application/octet-stream") to rawFile
+
+        if (!uploadFile.exists()) {
+            project.logger.lifecycle("Asset \"${uploadFile.name}\" doesn't exist.")
+            throw GradleException("Asset \"${uploadFile.name}\" doesn't exist.")
+        }
+
+        project.logger.info("Uploading file: ${uploadFile.absolutePath}")
+        project.logger.info("To: ${createTask.get().response.upload_url}")
+        val uploadUrl = createTask.get().response.upload_url!!.replace("{?name,label}", "")
+
+        val uploadResult = releaseApi
+            .uploadAsset(
+                uploadUrl,
+                uploadFile.name,
+                "token ${authToken.get()}",
+                contentType,
+                RequestBody.create(null, uploadFile)
+            )
+            .execute()
+
+        if (!uploadResult.isSuccessful) {
+            project.logger.lifecycle("Outbound request URL on failed asset upload was: `$uploadUrl` name=${uploadFile.name}")
+            project.logger.lifecycle("Upload result failed with code: ${uploadResult.code()}")
+            throw GradleException("Asset \"${uploadFile.name}\" upload failed: ${uploadResult.errorBody()!!.string()}")
+        }
+
+        project.logger.lifecycle("Release asset uploaded: ${uploadFile.name}")
     }
-
-    project.logger.info("Uploading file: ${uploadFile.absolutePath}")
-    project.logger.info("To: ${createTask.get().response.upload_url}")
-    val uploadUrl = createTask.get().response.upload_url!!.replace("{?name,label}", "")
-
-    val uploadResult = releaseApi
-      .uploadAsset(
-        uploadUrl,
-        uploadFile.name,
-        "token ${authToken.get()}",
-        contentType,
-        RequestBody.create(null, uploadFile)
-      )
-      .execute()
-
-    if (!uploadResult.isSuccessful) {
-      project.logger.lifecycle("Outbound request URL on failed asset upload was: `$uploadUrl` name=${uploadFile.name}")
-      project.logger.lifecycle("Upload result failed with code: ${uploadResult.code()}")
-      throw GradleException("Asset \"${uploadFile.name}\" upload failed: ${uploadResult.errorBody()!!.string()}")
-    }
-
-    project.logger.lifecycle("Release asset uploaded: ${uploadFile.name}")
-  }
 }
