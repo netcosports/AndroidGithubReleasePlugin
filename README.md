@@ -9,30 +9,15 @@ Installation & Usage
 The plugin is now hosted on the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/com.trevjonez.AndroidGithubReleasePlugin): 
 ```groovy
 buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
     dependencies {
-        classpath 'com.trevjonez.AndroidGithubReleasePlugin:plugin:1.2.2'
+        classpath 'com.netcosports:github-release:1.0.0'
     } 
-}
-```
-
-Or you can have it provided on demand by [Jitpack](https://jitpack.io/#trevjonez/AndroidGithubReleasePlugin):
-```groovy
-buildscript {
-    repositories {
-        maven { url "https://jitpack.io" }
-    }
-    dependencies {
-        classpath 'com.github.trevjonez:AndroidGithubReleasePlugin:1.2.2'
-    }
 }
 ```
 
 In the app or library module apply and configure the plugin as desired
 ```groovy
-apply plugin: 'com.trevjonez.AndroidGithubReleasePlugin'
+apply plugin: 'github-release-plugin'
 
 GithubApi {
   owner "RepoOwner"
