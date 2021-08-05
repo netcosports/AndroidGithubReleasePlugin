@@ -20,6 +20,7 @@ import okhttp3.RequestBody
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
@@ -35,6 +36,8 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 abstract class UploadReleaseAssetTask : AgrpTask() {
+
+    @Internal
     lateinit var createTask: TaskProvider<CreateReleaseTask>
 
     @get:Input

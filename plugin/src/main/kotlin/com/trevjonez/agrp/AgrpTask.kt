@@ -18,11 +18,16 @@ package com.trevjonez.agrp
 
 import com.trevjonez.github.gradle.GithubApiTask
 import com.trevjonez.github.releases.Release
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 
 abstract class AgrpTask : GithubApiTask() {
+
+  @get:Input
   @get:Nested
   lateinit var config: CascadingReleaseInputHelper
 
+  @get:Internal
   val releaseApi by githubApi<Release.Api>()
 }

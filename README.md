@@ -10,7 +10,7 @@ The plugin is now hosted on the [Gradle Plugin Portal](https://plugins.gradle.or
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.netcosports:github-release:1.0.0'
+        classpath 'com.netcosports:github-release:1.1.0'
     } 
 }
 ```

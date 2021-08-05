@@ -15,18 +15,23 @@
  */
 
 buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  }
+    repositories {
+        google()
+        maven { url "https://plugins.gradle.org/m2/" }
+        mavenLocal()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$agpVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.15.0"
+//        classpath "com.netcosports:github-release:1.1.0"
+        classpath "com.netcosports:github-release:$githubPluginsVersion"
+    }
 }
 
 allprojects {
-  repositories {
-    jcenter()
-    google()
-    mavenLocal()
-  }
+    repositories {
+        google()
+        mavenCentral()
+    }
 }

@@ -15,5 +15,6 @@
  */
 
 include ':plugin'
+include ':test'
 
 //includeBuild('../github-api')

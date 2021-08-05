@@ -18,10 +18,12 @@ package com.trevjonez.agrp
 
 import com.trevjonez.github.releases.Release
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 abstract class CreateReleaseTask : AgrpTask() {
 
+  @Internal
   lateinit var response: Release
 
   @TaskAction

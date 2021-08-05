@@ -1,0 +1,49 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'github-release-plugin'
+
+android {
+    compileSdk 31
+
+    defaultConfig {
+        applicationId "com.test"
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+    }
+
+    GithubApi {
+        owner "netcosports"
+        repo "AndroidGithubReleasePlugin"
+        authToken System.getenv("GITHUB_TOKEN") ?: ""
+    }
+
+    AndroidGithubRelease {
+        androidConfigs {
+            release {
+                targetCommitish "test"
+                releaseName "Release AndroidGithubReleasePlugin"
+                tagName "1"
+                assets 'build/outputs'
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+}
